@@ -1,0 +1,12 @@
+# Original T&J Software game files. Extracted locally as reverse engineering
+# source material, not redistributed.
+/original/
+/lemon42.zip
+
+# Reverse engineering intermediates (memory dumps, disassembly listings).
+# Regenerate with tools/re. See docs for the procedure.
+/work/
+
+# Node build output and dependencies.
+/node_modules/
+/dist/
