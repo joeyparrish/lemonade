@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { advanceDay, startRun, RUN_LENGTH_DAYS } from "../../src/engine";
 import type { GameState } from "../../src/engine";
-import { afterNewRun, afterOutcome, canResume } from "../../src/ui/router";
+import {
+  afterNewRun,
+  afterOutcome,
+  canResume,
+  restoreScreen,
+} from "../../src/ui/router";
 
 function withEvent(state: GameState, event: GameState["pendingEvent"]): GameState {
   return { ...state, pendingEvent: event };
@@ -33,6 +38,47 @@ describe("afterNewRun", () => {
 
   it("shows the event first when one is pending", () => {
     expect(afterNewRun(withEvent(startRun(1), "sugar"))).toBe("event");
+  });
+});
+
+describe("restoreScreen", () => {
+  const run = startRun(1);
+  const played = advanceDay(run, { glassesMade: 1, priceCents: 25 });
+
+  it("opens on the splash when there is nothing to restore", () => {
+    expect(restoreScreen(null, null)).toBe("splash");
+    expect(restoreScreen("setup", null)).toBe("splash");
+    expect(restoreScreen(null, run)).toBe("splash");
+  });
+
+  it("rejects a screen name it does not recognise", () => {
+    expect(restoreScreen("wharrgarbl", run)).toBe("splash");
+  });
+
+  it("restores a day in progress", () => {
+    expect(restoreScreen("setup", run)).toBe("setup");
+  });
+
+  it("restores unseen results rather than skipping them", () => {
+    expect(restoreScreen("outcome", played)).toBe("outcome");
+  });
+
+  it("falls back when the stored screen cannot exist in this state", () => {
+    // An outcome screen with nothing played yet.
+    expect(restoreScreen("outcome", run)).toBe("splash");
+    // An event screen with no event pending.
+    expect(restoreScreen("event", withEvent(run, null))).toBe("setup");
+  });
+
+  it("sends a finished run to its summary instead of another day", () => {
+    const finished: GameState = { ...played, finished: true };
+    expect(restoreScreen("setup", finished)).toBe("summary");
+    expect(restoreScreen("event", finished)).toBe("summary");
+  });
+
+  it("still allows the final results screen of a finished run", () => {
+    const finished: GameState = { ...played, finished: true };
+    expect(restoreScreen("outcome", finished)).toBe("outcome");
   });
 });
 

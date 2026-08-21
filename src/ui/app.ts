@@ -7,9 +7,15 @@ import {
   validateDecision,
   type GameState,
 } from "../engine";
-import { loadSaved, recordScore, saveRun } from "../storage/store";
+import { loadSaved, recordScore, saveRun, saveScreen } from "../storage/store";
 import { formatMoney } from "./format";
-import { afterNewRun, afterOutcome, canResume, type Screen } from "./router";
+import {
+  afterNewRun,
+  afterOutcome,
+  canResume,
+  restoreScreen,
+  type Screen,
+} from "./router";
 import { eventView } from "./screens/event";
 import { outcomeView } from "./screens/outcome";
 import { scoresView } from "./screens/scores";
@@ -20,14 +26,16 @@ import { summaryView } from "./screens/summary";
 const root = document.querySelector<HTMLDivElement>("#app");
 if (!root) throw new Error("missing #app mount point");
 
-let run: GameState | null = loadSaved().run;
-let screen: Screen = "splash";
+const saved = loadSaved();
+let run: GameState | null = saved.run;
+let screen: Screen = restoreScreen(saved.screen, run);
 
 /** Screens that belong to a day in progress and so carry the status strip. */
 const IN_PLAY: readonly Screen[] = ["setup", "outcome", "event"];
 
 function show(next: Screen): void {
   screen = next;
+  saveScreen(next);
   render();
 }
 

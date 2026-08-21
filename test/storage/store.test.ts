@@ -3,6 +3,7 @@ import {
   loadSaved,
   recordScore,
   saveRun,
+  saveScreen,
   type StorageBackend,
 } from "../../src/storage/store";
 import { startRun } from "../../src/engine/game";
@@ -40,6 +41,25 @@ describe("store", () => {
     expect(loadSaved(backend).run).toEqual(run);
   });
 
+  it("round trips the current screen alongside the run", () => {
+    const backend = memoryBackend();
+    const run = startRun(7);
+    saveRun(run, backend);
+    saveScreen("outcome", backend);
+    const saved = loadSaved(backend);
+    expect(saved.screen).toBe("outcome");
+    expect(saved.run).toEqual(run);
+  });
+
+  it("reports no screen for a save written before screens were stored", () => {
+    const backend = memoryBackend();
+    backend.setItem(
+      "lemonade.v1",
+      JSON.stringify({ version: 1, run: null, highScores: [] }),
+    );
+    expect(loadSaved(backend).screen).toBeNull();
+  });
+
   it("keeps high scores sorted, highest first", () => {
     const backend = memoryBackend();
     recordScore(500, "2026-01-01", backend);
@@ -66,6 +86,7 @@ describe("store", () => {
       version: 1,
       run: null,
       highScores: [],
+      screen: null,
     });
   });
 

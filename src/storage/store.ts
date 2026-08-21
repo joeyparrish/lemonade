@@ -17,9 +17,16 @@ export interface Saved {
   version: 1;
   run: GameState | null;
   highScores: HighScore[];
+  /**
+   * Which screen the player was last on, so closing the tab mid-results does
+   * not skip past them on return. Stored as a plain string rather than the
+   * UI's Screen union to keep persistence independent of the interface; the
+   * UI validates it on the way back in.
+   */
+  screen: string | null;
 }
 
-const EMPTY: Saved = { version: 1, run: null, highScores: [] };
+const EMPTY: Saved = { version: 1, run: null, highScores: [], screen: null };
 
 /**
  * Browsers can refuse storage entirely (private windows, blocked site data),
@@ -46,6 +53,7 @@ function read(backend: StorageBackend | null): Saved {
       version: 1,
       run: parsed.run ?? null,
       highScores: Array.isArray(parsed.highScores) ? parsed.highScores : [],
+      screen: typeof parsed.screen === "string" ? parsed.screen : null,
     };
   } catch {
     return { ...EMPTY };
@@ -67,6 +75,10 @@ export function loadSaved(backend = defaultBackend()): Saved {
 
 export function saveRun(run: GameState | null, backend = defaultBackend()): void {
   write(backend, { ...read(backend), run });
+}
+
+export function saveScreen(screen: string, backend = defaultBackend()): void {
+  write(backend, { ...read(backend), screen });
 }
 
 export function recordScore(
