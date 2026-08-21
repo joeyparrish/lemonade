@@ -148,7 +148,19 @@ rests on careful reading of the disassembly. As proportionate insurance, the
 completed engine is sanity checked against the original running under DOSBox-X:
 a handful of hand played days, comparing outcomes for gross discrepancies such
 as an inverted comparison or a misplaced factor of ten. This is a smoke test,
-not a proof, and is described as such.
+not a proof, and is described as such. That check was carried out and found no
+discrepancies.
+
+### One rule the port adds
+
+A run also ends when the player cannot afford a single glass, rather than only
+after thirty days. Below that threshold the only available move is a zero glass
+day, which can never earn anything back, so the run is a dead end. The summary
+screen distinguishes this from a completed season.
+
+This is an addition rather than recovered behavior. What the original does when
+a player is broke was never established, so this is not a claim about it. The
+engine comments say so at the site, in line with the policy above.
 
 ## User interface
 
@@ -168,24 +180,57 @@ viewport the two panels sit side by side. On a narrow viewport they stack, the
 status strip becomes a sticky header, and the commands become a bottom action
 bar within thumb reach.
 
-### Deferred: the input surface
+### The input surface: resolved, no change needed
 
 Each day asks two numeric questions: how many glasses to make, and what to
-charge per glass. Free text numeric entry is a poor fit for a phone, and the
-right answer is a design conversation rather than a default.
+charge per glass. Free text numeric entry looked like a poor fit for a phone, so
+the first implementation shipped plain accessible numeric inputs, explicitly
+labelled a placeholder, and the real design was deferred until there was
+something playable to react to.
 
-The first implementation therefore ships plain accessible numeric inputs, which
-are known to be adequate rather than good. The real input surface is designed
-separately, after there is something playable to react to. This is recorded as
-deliberately unfinished so that the placeholder does not quietly become the
-answer.
+Phone testing settled it in favour of the placeholder. Two things had been
+missed. A number input behaves differently by platform in a way that suits both
+ends: desktop renders increment steppers, and mobile omits them but raises the
+numeric keypad on focus. Separately, carrying the previous day's glasses and
+price forward turned most days into an adjustment rather than fresh entry,
+which removed most of the typing the concern was actually about.
+
+Steppers with tuned increments, presets on the price band edges, a price slider
+with a numeric readout, and a "same as yesterday" shortcut were all considered.
+The prefill made the last redundant and the others would have added furniture
+without earning it. The shipped form is therefore the answer rather than a
+placeholder awaiting one.
+
+### The bundled font is load bearing
+
+The art is built from block and box drawing characters, and several common
+system monospace fonts lack them. Android's default lacks the half blocks the
+title uses. A missing glyph makes the browser substitute another face for that
+single cell, and the substituted advance width does not match, so the row
+skews.
+
+The app therefore ships a subset of DejaVu Sans Mono rather than relying on a
+system face, and `tools/font/subset.py` verifies that every codepoint the art
+and interface use is present at a uniform advance width before writing the
+file. Coverage alone is not enough, since a glyph present at the wrong width
+skews a row exactly as badly as a missing one. Re-run that tool after changing
+the art; it exits non-zero rather than producing a font with a hole in it.
 
 ## Persistence
 
-Browser local storage under a versioned schema key, holding a local high score
-table, the run in progress, and display preferences. Storage access is wrapped
-so that a private window, cleared site data, or a browser that refuses storage
-degrades to an in memory session rather than failing.
+Browser local storage under a versioned schema key, holding the run in
+progress, a local high score table, and the screen the player was last on.
+Storage access is wrapped so that a private window, cleared site data, or a
+browser that refuses storage degrades to an in memory session rather than
+failing.
+
+Loading the page always opens on the splash screen, whatever was stored.
+Returning should be a choice rather than a surprise: nobody is dropped straight
+back into a game, or into the high score list, without asking for it. The
+stored screen is read only when Resume is pressed, which returns the player to
+the exact point they left, including a day's results they had not yet read.
+Only the screens belonging to a day in progress are stored, so browsing the
+high scores does not move the resume point.
 
 ## Testing
 

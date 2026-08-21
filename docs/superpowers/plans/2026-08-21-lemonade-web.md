@@ -1993,21 +1993,31 @@ git commit -m "Add playable interface"
 - Consumes: everything from Task 11.
 - Produces: a revised decision form. No engine changes.
 
-**This task is blocked pending a design conversation.** The spec defers it
-deliberately: two numeric questions a day is a poor fit for a phone keyboard,
-and the answer is a design decision rather than a default. Task 11 ships plain
-numeric inputs precisely so that this stays an open question rather than being
-settled by accident.
+**Resolved: no change needed. The plain inputs from Task 11 are the answer.**
 
-- [ ] **Step 1: Hold the design conversation**
+This task was held open deliberately rather than settled by default, because
+two numeric questions a day looked like a poor fit for a phone keyboard and the
+replacement was a design decision rather than something to guess at.
 
-Review the plain inputs on a real phone. Decide what replaces them. Options
-worth weighing include steppers with sensible increments, quick presets drawn
-from the price band edges, a slider for price with a numeric readout, and a
-"same as yesterday" shortcut. Pick deliberately.
+- [x] **Step 1: Hold the design conversation**
 
-- [ ] **Step 2: Implement, verify on a phone viewport, and commit**
+Held after playing the real thing on a phone. Findings:
 
-Implementation follows the decision from Step 1 and cannot be specified before
-it. Keep real form controls and keyboard access. Re-run `npm test` and
-`npm run build` before committing.
+- `type="number"` behaves differently by platform in a way that happens to suit
+  both. Desktop gets increment steppers; mobile gets no steppers but raises the
+  numeric keypad on focus. Neither needed replacing.
+- Carrying the previous day's glasses and price into the next day, added
+  separately, removed most of the typing the concern was really about. Most
+  days became an adjustment rather than fresh entry.
+- The alternatives considered and rejected were steppers with tuned increments,
+  presets drawn from the price band edges, a price slider with a numeric
+  readout, and a "same as yesterday" shortcut. The prefill made the last
+  redundant, and the rest would have added furniture without earning it.
+
+Verdict from the owner after phone testing: "the easy thing looks like the
+right thing."
+
+- [x] **Step 2: Implement, verify on a phone viewport, and commit**
+
+Nothing to implement. The shipped form is the outcome of this task, not a
+placeholder awaiting one.
