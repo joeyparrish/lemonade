@@ -94,22 +94,17 @@ footer {
   border-top: 2px solid var(--border);
 }
 
-.columns {
-  display: grid;
-  gap: 1rem;
+/* One screen at a time, so a single centred column reads better than the
+   two-pane split the earlier build used. */
+.stage {
   padding: 1rem;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 44rem) {
-  .columns {
-    grid-template-columns: 1fr 1fr;
-  }
+  max-width: 34rem;
+  margin: 0 auto;
 }
 
 label {
   display: block;
-  margin: 0.75rem 0;
+  margin: 0.75rem 0 0.25rem;
 }
 
 input {
@@ -156,4 +151,90 @@ dd {
 
 #error:empty {
   display: none;
+}
+
+/* Block art. Sized so the 39 column title fits a narrow phone without
+   scrolling, and never wider than its container. */
+.art {
+  margin: 0 auto;
+  font-family: var(--font-mono);
+  font-size: min(2.35vw, 0.85rem);
+  line-height: 1.05;
+  white-space: pre;
+  text-align: center;
+  overflow-x: auto;
+}
+
+.art--title {
+  color: var(--yellow);
+}
+
+.art--sun {
+  color: var(--yellow);
+}
+
+.art--rain {
+  color: var(--bright-cyan);
+}
+
+.splash {
+  padding: 1.5rem 0;
+  text-align: center;
+}
+
+.tagline {
+  margin: 1.5rem 0;
+  color: var(--light-gray);
+}
+
+.menu {
+  display: grid;
+  gap: 0.6rem;
+  max-width: 22rem;
+  margin: 0 auto;
+}
+
+.weather-message {
+  margin: 1rem 0;
+  text-align: center;
+  color: var(--white);
+}
+
+.dialog {
+  border-color: var(--bad);
+}
+
+.dialog > h2 {
+  background: var(--bad);
+}
+
+.event-message {
+  font-size: 1.05em;
+}
+
+.scores {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: rank;
+}
+
+.scores li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--dark-gray);
+  counter-increment: rank;
+}
+
+.scores li::before {
+  content: counter(rank) ".";
+  color: var(--dark-gray);
+}
+
+.scores li span {
+  flex: 1;
+  text-align: left;
+  padding-left: 0.75rem;
 }

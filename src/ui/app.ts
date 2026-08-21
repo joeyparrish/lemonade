@@ -1,121 +1,129 @@
 import "./theme.css";
 import {
+  RUN_LENGTH_DAYS,
   advanceDay,
   finalScoreCents,
-  maxAffordableGlasses,
-  RUN_LENGTH_DAYS,
   startRun,
   validateDecision,
   type GameState,
 } from "../engine";
 import { loadSaved, recordScore, saveRun } from "../storage/store";
-import { formatCount, formatMoney } from "./format";
+import { formatMoney } from "./format";
+import { afterNewRun, afterOutcome, canResume, type Screen } from "./router";
+import { eventView } from "./screens/event";
+import { outcomeView } from "./screens/outcome";
+import { scoresView } from "./screens/scores";
+import { setupView } from "./screens/setup";
+import { splashView } from "./screens/splash";
+import { summaryView } from "./screens/summary";
 
 const root = document.querySelector<HTMLDivElement>("#app");
 if (!root) throw new Error("missing #app mount point");
 
-let state: GameState = loadSaved().run ?? startRun(Date.now() >>> 0);
+let run: GameState | null = loadSaved().run;
+let screen: Screen = "splash";
 
-function daysLeft(s: GameState): number {
-  return RUN_LENGTH_DAYS - s.history.length;
-}
+/** Screens that belong to a day in progress and so carry the status strip. */
+const IN_PLAY: readonly Screen[] = ["setup", "outcome", "event"];
 
-function newRun(): void {
-  state = startRun(Date.now() >>> 0);
-  saveRun(state);
+function show(next: Screen): void {
+  screen = next;
   render();
 }
 
-function renderForecast(): string {
-  if (state.finished) {
-    return `
-      <p>The season is over.</p>
-      <p>Final takings: <b class="value">${formatMoney(finalScoreCents(state))}</b></p>
-      <button id="again" type="button">Play again</button>`;
-  }
-  const affordable = maxAffordableGlasses(state);
-  return `
-    <p>High temperature: <b class="value">${state.pendingWeather.temperatureF}&deg;F</b></p>
-    <p>Chance of rain: <b class="value">${state.pendingWeather.chanceOfRain}%</b></p>
-    ${
-      state.pendingEvent
-        ? `<p class="value--bad">The price of ${state.pendingEvent} has gone up.</p>`
-        : ""
-    }
-    <form id="decide">
-      <label>Glasses to make (up to ${formatCount(affordable)})
-        <input id="glasses" type="number" inputmode="numeric"
-               min="0" max="${affordable}" value="0" required />
-      </label>
-      <label>Price per glass, in cents
-        <input id="price" type="number" inputmode="numeric"
-               min="0" max="20000" value="25" required />
-      </label>
-      <p id="error" class="value--bad" role="alert"></p>
-      <button type="submit">Open the stand</button>
-    </form>`;
+function newSeason(): void {
+  run = startRun(Date.now() >>> 0);
+  saveRun(run);
+  show(afterNewRun(run));
 }
 
-function renderYesterday(): string {
-  const last = state.history[state.history.length - 1];
-  if (!last) return "<p>No trading yet.</p>";
-  return `
-    <dl>
-      <dt>Weather</dt>
-      <dd>${last.rained ? "Rain. No customers." : `Fair, ${last.weather.temperatureF}&deg;F`}</dd>
-      <dt>Glasses made</dt><dd>${formatCount(last.glassesMade)}</dd>
-      <dt>Glasses sold</dt><dd>${formatCount(last.glassesSold)}</dd>
-      <dt>Sales</dt><dd>${formatMoney(last.totalSalesCents)}</dd>
-      <dt>Costs</dt><dd>${formatMoney(last.totalCostCents)}</dd>
-      <dt>Profit</dt>
-      <dd class="${last.profitCents < 0 ? "value--bad" : "value--good"}">${formatMoney(last.profitCents)}</dd>
-    </dl>`;
-}
-
-function submit(event: Event): void {
+function openStand(event: Event): void {
   event.preventDefault();
+  if (!run) return;
   const glasses = Number(
     document.querySelector<HTMLInputElement>("#glasses")?.value,
   );
   const price = Number(document.querySelector<HTMLInputElement>("#price")?.value);
   const decision = { glassesMade: glasses, priceCents: price };
-  const problem = validateDecision(state, decision);
+
+  const problem = validateDecision(run, decision);
   if (problem) {
     const errorEl = document.querySelector("#error");
     if (errorEl) errorEl.textContent = problem;
     return;
   }
-  state = advanceDay(state, decision);
-  if (state.finished) {
-    recordScore(finalScoreCents(state), new Date().toISOString().slice(0, 10));
+
+  run = advanceDay(run, decision);
+  if (run.finished) {
+    recordScore(finalScoreCents(run), new Date().toISOString().slice(0, 10));
   }
-  saveRun(state);
-  render();
+  saveRun(run);
+  show("outcome");
+}
+
+/** Keeps the cents field's label showing the value in dollars as you type. */
+function updatePriceEcho(): void {
+  const input = document.querySelector<HTMLInputElement>("#price");
+  const echo = document.querySelector("#price-echo");
+  if (!input || !echo) return;
+  const cents = Number(input.value);
+  echo.textContent =
+    input.value.trim() === "" || Number.isNaN(cents)
+      ? ""
+      : `(= ${formatMoney(Math.trunc(cents))})`;
+}
+
+function body(): string {
+  if (screen === "splash") return splashView(canResume(run));
+  if (screen === "scores") return scoresView(loadSaved().highScores);
+  if (!run) return splashView(canResume(run));
+  if (screen === "summary") return summaryView(run);
+  if (screen === "event" && run.pendingEvent) {
+    return eventView(run.pendingEvent, run.costPerGlassCents);
+  }
+  if (screen === "outcome") {
+    const last = run.history[run.history.length - 1];
+    if (last) return outcomeView(last, run.finished);
+  }
+  return setupView(run);
+}
+
+function statusStrip(): string {
+  if (!run || !IN_PLAY.includes(screen)) return "";
+  const day = Math.min(run.day, RUN_LENGTH_DAYS);
+  return `
+    <header class="status">
+      <span>Day <b class="value">${day}</b>/${RUN_LENGTH_DAYS}</span>
+      <span>Cash <b class="value">${formatMoney(run.cashCents)}</b></span>
+      <span>Glass <b class="value">${formatMoney(run.costPerGlassCents)}</b></span>
+    </header>`;
+}
+
+function bind(): void {
+  document.querySelector("#new-game")?.addEventListener("click", newSeason);
+  document.querySelector("#high-scores")?.addEventListener("click", () => {
+    show("scores");
+  });
+  document.querySelector("#resume")?.addEventListener("click", () => {
+    show("setup");
+  });
+  document.querySelector("#back")?.addEventListener("click", () => {
+    show("splash");
+  });
+  document.querySelector("#prepare")?.addEventListener("click", () => {
+    show("setup");
+  });
+  document.querySelector("#next-day")?.addEventListener("click", () => {
+    if (run) show(afterOutcome(run));
+  });
+  document.querySelector("#decide")?.addEventListener("submit", openStand);
+  document.querySelector("#price")?.addEventListener("input", updatePriceEcho);
 }
 
 function render(): void {
   if (!root) return;
-  root.innerHTML = `
-    <header class="status">
-      <span>Day <b class="value">${Math.min(state.day, RUN_LENGTH_DAYS)}</b>/${RUN_LENGTH_DAYS}</span>
-      <span>Cash <b class="value">${formatMoney(state.cashCents)}</b></span>
-      <span>Cost/glass <b class="value">${formatMoney(state.costPerGlassCents)}</b></span>
-    </header>
-    <main class="columns">
-      <section class="panel">
-        <h2>Forecast</h2>
-        ${renderForecast()}
-      </section>
-      <section class="panel">
-        <h2>Yesterday</h2>
-        ${renderYesterday()}
-      </section>
-    </main>
-    <footer><span>${formatCount(daysLeft(state))} days left</span></footer>
-  `;
-
-  document.querySelector("#again")?.addEventListener("click", newRun);
-  document.querySelector("#decide")?.addEventListener("submit", submit);
+  root.innerHTML = `${statusStrip()}<main class="stage">${body()}</main>`;
+  bind();
 }
 
 render();
