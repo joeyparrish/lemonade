@@ -136,6 +136,13 @@ button {
   cursor: pointer;
 }
 
+/* Breathing room between the last line of content and the button that moves
+   the game on. Splash menu buttons are spaced by the grid gap instead. */
+.panel > button,
+.panel form > button {
+  margin-top: 1.25rem;
+}
+
 dl {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -162,7 +169,10 @@ dd {
   line-height: 1.05;
   white-space: pre;
   text-align: center;
-  overflow-x: auto;
+  /* Never scroll. The clamp above keeps every figure inside its container down
+     to a 320 pixel viewport, so there is nothing to reach by scrolling, and an
+     auto scrollbar here appears on sub-pixel overflow and looks broken. */
+  overflow: hidden;
 }
 
 .art--title {
