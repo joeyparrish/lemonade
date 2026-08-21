@@ -25,11 +25,11 @@ export const STAND = [
 
 /** Every row is 21 columns. */
 export const SUN = [
-  "       ▄▄▄▄▄▄▄       ",
+  "     ⑊ ▄▄▄▄▄▄▄ ⫽     ",
   "    ╲ ▟███████▙ ╱    ",
   "   ── █████████ ──   ",
   "    ╱ ▜███████▛ ╲    ",
-  "       ▀▀▀▀▀▀▀       ",
+  "     ⫽ ▀▀▀▀▀▀▀ ⑊     ",
 ].join("\n");
 
 /** Every row is 21 columns. */
