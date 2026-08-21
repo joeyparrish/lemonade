@@ -113,9 +113,17 @@ export function advanceDay(state: GameState, decision: Decision): GameState {
   };
 
   const nextDay = state.day + 1;
-  const finished = nextDay > RUN_LENGTH_DAYS;
+  const seasonOver = nextDay > RUN_LENGTH_DAYS;
   const setup = setupRngFor(state.seed, nextDay);
   const nextCost = rollNewsEvent(state.costPerGlassCents, setup);
+  /*
+   * Deliberate addition, not recovered behaviour. Once cash will not cover a
+   * single glass the player can only sit through zero-glass days that can
+   * never earn anything back, so the run ends instead. What the original did
+   * in this situation was not established.
+   */
+  const bankrupt = !seasonOver && cashCents < nextCost.costPerGlassCents;
+  const finished = seasonOver || bankrupt;
 
   return {
     ...state,
@@ -138,4 +146,9 @@ export function advanceDay(state: GameState, decision: Decision): GameState {
 
 export function finalScoreCents(state: GameState): number {
   return state.cashCents;
+}
+
+/** True when the run ended early because the player could not afford a glass. */
+export function wentBust(state: GameState): boolean {
+  return state.finished && state.history.length < RUN_LENGTH_DAYS;
 }

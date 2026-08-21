@@ -5,8 +5,10 @@ import {
   maxAffordableGlasses,
   startRun,
   validateDecision,
+  wentBust,
 } from "../../src/engine/game";
 import { RUN_LENGTH_DAYS } from "../../src/engine/constants";
+import type { GameState } from "../../src/engine/types";
 
 describe("startRun", () => {
   it("starts with a dollar, two cent glasses, and day one", () => {
@@ -130,6 +132,36 @@ describe("advanceDay", () => {
         s = day;
       }
     }
+  });
+
+  it("ends the run early once cash cannot cover another glass", () => {
+    // Two cents, one glass, priced high enough that nothing sells: the batch
+    // costs everything and earns nothing.
+    const broke: GameState = {
+      ...startRun(1),
+      cashCents: 2,
+      costPerGlassCents: 2,
+    };
+    const after = advanceDay(broke, { glassesMade: 1, priceCents: 20000 });
+    expect(after.history[0]!.glassesSold).toBe(0);
+    expect(after.cashCents).toBe(0);
+    expect(after.finished).toBe(true);
+    expect(wentBust(after)).toBe(true);
+  });
+
+  it("keeps going while a glass is still affordable", () => {
+    const s = advanceDay(startRun(1), { glassesMade: 1, priceCents: 25 });
+    expect(s.finished).toBe(false);
+    expect(wentBust(s)).toBe(false);
+  });
+
+  it("does not count a completed season as going bust", () => {
+    let s = startRun(11);
+    for (let i = 0; i < RUN_LENGTH_DAYS; i++) {
+      s = advanceDay(s, { glassesMade: 1, priceCents: 25 });
+    }
+    expect(s.finished).toBe(true);
+    expect(wentBust(s)).toBe(false);
   });
 
   it("carries jittered coefficients across the 126 cent gap", () => {
