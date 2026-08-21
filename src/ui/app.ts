@@ -132,6 +132,9 @@ function bind(): void {
   });
   document.querySelector("#decide")?.addEventListener("submit", openStand);
   document.querySelector("#price")?.addEventListener("input", updatePriceEcho);
+  // The price field may arrive prefilled from yesterday, so the echo has to be
+  // right before the player types anything.
+  updatePriceEcho();
 }
 
 function render(): void {

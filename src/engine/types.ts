@@ -25,6 +25,11 @@ export interface DayOutcome {
   event: NewsEvent | null;
   costPerGlassCents: number;
   glassesMade: number;
+  /**
+   * What the player charged. Recorded rather than derived, because on a rained
+   * out day both sales and glasses sold are zero and the price is unrecoverable.
+   */
+  priceCents: number;
   glassesSold: number;
   totalCostCents: number;
   totalSalesCents: number;

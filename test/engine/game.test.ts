@@ -134,6 +134,11 @@ describe("advanceDay", () => {
     }
   });
 
+  it("records the price charged, which a rained out day cannot recover", () => {
+    const s = advanceDay(startRun(5), { glassesMade: 10, priceCents: 30 });
+    expect(s.history[0]!.priceCents).toBe(30);
+  });
+
   it("ends the run early once cash cannot cover another glass", () => {
     // Two cents, one glass, priced high enough that nothing sells: the batch
     // costs everything and earns nothing.

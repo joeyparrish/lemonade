@@ -105,6 +105,7 @@ export function advanceDay(state: GameState, decision: Decision): GameState {
     event: state.pendingEvent,
     costPerGlassCents: state.costPerGlassCents,
     glassesMade: decision.glassesMade,
+    priceCents: decision.priceCents,
     glassesSold: sold,
     totalCostCents,
     totalSalesCents,
