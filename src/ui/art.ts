@@ -48,19 +48,14 @@ export const RAIN = [
   "      ╱  ╱  ╱  ╱     ",
 ].join("\n");
 
-/*
- * The three strings below are verbatim from the original game's screens, kept
- * at the owner's request for this private build. They are the only copied text
- * in the project; everything else is written for it. If this ever goes public,
- * reword these.
- */
-export const SUNNY_MESSAGE =
-  "Ahhhh, a bright and sunny day! Profits should roll in if you decided to make your lemonade!";
 
-export const RAIN_MESSAGE = "No customers with this rain!";
+export const SUNNY_MESSAGE =
+  "Ahhhh, a bright and sunny day! The cash should just be rolling in today!";
+
+export const RAIN_MESSAGE = "People drinking lemonade in the rain: 0, ever.";
 
 export function eventMessage(ingredient: string): string {
-  return `Oh No! The price of ${ingredient} has gone up! It's now going to cost you more to make a glass of lemonade!!`;
+  return `Oh no! The price of ${ingredient} has gone up! That's going to raise your costs!!`;
 }
 
 export const INGREDIENT_NAMES = {
