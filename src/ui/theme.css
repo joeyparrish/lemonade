@@ -1,0 +1,74 @@
+/*
+ * Visual language: the sixteen colour EGA/VGA palette, a fixed width face,
+ * hard edges, heavy contrast. Drawn from the look of the original's screens
+ * and redrawn from scratch; no artwork from the original is reproduced.
+ */
+:root {
+  --black: #000000;
+  --blue: #0000aa;
+  --green: #00aa00;
+  --cyan: #00aaaa;
+  --red: #aa0000;
+  --magenta: #aa00aa;
+  --brown: #aa5500;
+  --light-gray: #aaaaaa;
+  --dark-gray: #555555;
+  --bright-blue: #5555ff;
+  --bright-green: #55ff55;
+  --bright-cyan: #55ffff;
+  --bright-red: #ff5555;
+  --bright-magenta: #ff55ff;
+  --yellow: #ffff55;
+  --white: #ffffff;
+
+  --bg: var(--black);
+  --fg: var(--light-gray);
+  --accent: var(--yellow);
+  --border: var(--cyan);
+  --good: var(--bright-green);
+  --bad: var(--bright-red);
+
+  --font-mono: "DejaVu Sans Mono", "Liberation Mono", Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: clamp(14px, 2.6vw, 17px);
+  line-height: 1.35;
+  -webkit-text-size-adjust: 100%;
+}
+
+.panel {
+  border: 2px solid var(--border);
+  padding: 0.75rem;
+  background: var(--bg);
+}
+
+.panel > h2 {
+  margin: -0.75rem -0.75rem 0.75rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--border);
+  color: var(--black);
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.value {
+  color: var(--accent);
+}
+
+.value--good {
+  color: var(--good);
+}
+
+.value--bad {
+  color: var(--bad);
+}
