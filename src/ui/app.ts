@@ -90,7 +90,13 @@ function body(): string {
 
 function statusStrip(): string {
   if (!run || !IN_PLAY.includes(screen)) return "";
-  const day = Math.min(run.day, RUN_LENGTH_DAYS);
+  // advanceDay has already moved the counter on by the time results are shown,
+  // so the strip would otherwise disagree with the "Day N results" heading.
+  const lastPlayed = run.history[run.history.length - 1];
+  const day =
+    screen === "outcome" && lastPlayed
+      ? lastPlayed.day
+      : Math.min(run.day, RUN_LENGTH_DAYS);
   return `
     <header class="status">
       <span>Day <b class="value">${day}</b>/${RUN_LENGTH_DAYS}</span>
