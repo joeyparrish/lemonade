@@ -23,13 +23,20 @@ export const STAND = [
   "   ██████████████████████   ",
 ].join("\n");
 
-/** Every row is 21 columns. */
+/**
+ * Every row is 21 columns.
+ *
+ * The outer rays use the same box-drawing diagonals as the inner ones. They
+ * were briefly U+244A and U+2AFD, which no monospace font in common use
+ * carries, so browsers substituted another face for those two cells and the
+ * mismatched advance width skewed the whole figure.
+ */
 export const SUN = [
-  "     ⑊ ▄▄▄▄▄▄▄ ⫽     ",
+  "     ╲ ▄▄▄▄▄▄▄ ╱     ",
   "    ╲ ▟███████▙ ╱    ",
   "   ── █████████ ──   ",
   "    ╱ ▜███████▛ ╲    ",
-  "     ⫽ ▀▀▀▀▀▀▀ ⑊     ",
+  "     ╱ ▀▀▀▀▀▀▀ ╲     ",
 ].join("\n");
 
 /** Every row is 21 columns. */

@@ -1,4 +1,28 @@
 /*
+ * A bundled monospace face, subset from DejaVu Sans Mono by tools/font/subset.py.
+ *
+ * The block and box-drawing characters the art is built from are missing from
+ * several common system monospace fonts, notably Android's default. A missing
+ * glyph makes the browser substitute another face for that one cell, and the
+ * substitute's advance width does not match, so the row skews. Shipping a font
+ * verified to contain every glyph at a uniform width is the only reliable fix.
+ *
+ * The family is deliberately named for the subset rather than "DejaVu Sans
+ * Mono", so a differently versioned copy installed on the viewer's machine can
+ * never be picked in preference to the one we checked.
+ *
+ * font-display: block because the art is the point of the splash screen. A
+ * brief blank beats painting it skewed in a fallback face and then reflowing.
+ */
+@font-face {
+  font-family: "DejaVu Sans Mono Subset";
+  src: url("./fonts/dejavu-sans-mono-subset.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+/*
  * Visual language: the sixteen colour EGA/VGA palette, a fixed width face,
  * hard edges, heavy contrast. Drawn from the look of the original's screens
  * and redrawn from scratch; no artwork from the original is reproduced.
@@ -28,7 +52,10 @@
   --good: var(--bright-green);
   --bad: var(--bright-red);
 
-  --font-mono: "DejaVu Sans Mono", "Liberation Mono", Menlo, Consolas, monospace;
+  /* The bundled subset first. The rest only matter if it fails to load, and
+     are ordered by how much of the block-drawing range they actually carry. */
+  --font-mono: "DejaVu Sans Mono Subset", "DejaVu Sans Mono", "Liberation Mono",
+    Menlo, Consolas, monospace;
 }
 
 * {
