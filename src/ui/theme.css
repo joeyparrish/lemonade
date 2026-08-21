@@ -72,3 +72,88 @@ body {
 .value--bad {
   color: var(--bad);
 }
+
+/* Layout. Two panels side by side when there is room, stacked when there is
+   not, with the status strip pinned and the actions within thumb reach. */
+.status,
+footer {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 1;
+}
+
+footer {
+  position: static;
+  border-bottom: 0;
+  border-top: 2px solid var(--border);
+}
+
+.columns {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 44rem) {
+  .columns {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+label {
+  display: block;
+  margin: 0.75rem 0;
+}
+
+input {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.6rem;
+  font: inherit;
+  color: var(--accent);
+  background: var(--black);
+  border: 2px solid var(--dark-gray);
+}
+
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button {
+  width: 100%;
+  padding: 0.85rem;
+  font: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--black);
+  background: var(--accent);
+  border: 0;
+  cursor: pointer;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0;
+}
+
+dd {
+  margin: 0;
+  text-align: right;
+  color: var(--accent);
+}
+
+#error:empty {
+  display: none;
+}
