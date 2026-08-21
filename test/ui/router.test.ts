@@ -5,7 +5,7 @@ import {
   afterNewRun,
   afterOutcome,
   canResume,
-  restoreScreen,
+  resumeScreen,
 } from "../../src/ui/router";
 
 function withEvent(state: GameState, event: GameState["pendingEvent"]): GameState {
@@ -41,44 +41,45 @@ describe("afterNewRun", () => {
   });
 });
 
-describe("restoreScreen", () => {
+describe("resumeScreen", () => {
   const run = startRun(1);
   const played = advanceDay(run, { glassesMade: 1, priceCents: 25 });
 
-  it("opens on the splash when there is nothing to restore", () => {
-    expect(restoreScreen(null, null)).toBe("splash");
-    expect(restoreScreen("setup", null)).toBe("splash");
-    expect(restoreScreen(null, run)).toBe("splash");
+  it("has nowhere to resume to without a run in progress", () => {
+    expect(resumeScreen("setup", null)).toBe("splash");
+    expect(resumeScreen("setup", { ...played, finished: true })).toBe("splash");
   });
 
-  it("rejects a screen name it does not recognise", () => {
-    expect(restoreScreen("wharrgarbl", run)).toBe("splash");
+  it("returns to the day in progress", () => {
+    expect(resumeScreen("setup", run)).toBe("setup");
   });
 
-  it("restores a day in progress", () => {
-    expect(restoreScreen("setup", run)).toBe("setup");
+  it("returns to results the player had not read yet", () => {
+    expect(resumeScreen("outcome", played)).toBe("outcome");
   });
 
-  it("restores unseen results rather than skipping them", () => {
-    expect(restoreScreen("outcome", played)).toBe("outcome");
+  it("returns to a pending price event", () => {
+    expect(resumeScreen("event", withEvent(run, "sugar"))).toBe("event");
   });
 
-  it("falls back when the stored screen cannot exist in this state", () => {
-    // An outcome screen with nothing played yet.
-    expect(restoreScreen("outcome", run)).toBe("splash");
-    // An event screen with no event pending.
-    expect(restoreScreen("event", withEvent(run, null))).toBe("setup");
+  it("falls back to setup when nothing was stored", () => {
+    expect(resumeScreen(null, run)).toBe("setup");
   });
 
-  it("sends a finished run to its summary instead of another day", () => {
-    const finished: GameState = { ...played, finished: true };
-    expect(restoreScreen("setup", finished)).toBe("summary");
-    expect(restoreScreen("event", finished)).toBe("summary");
+  it("falls back to setup for a screen name it does not recognise", () => {
+    expect(resumeScreen("wharrgarbl", run)).toBe("setup");
   });
 
-  it("still allows the final results screen of a finished run", () => {
-    const finished: GameState = { ...played, finished: true };
-    expect(restoreScreen("outcome", finished)).toBe("outcome");
+  it("falls back to setup for a screen outside the game itself", () => {
+    // Browsing the high scores is not a place to resume a game to.
+    expect(resumeScreen("scores", run)).toBe("setup");
+    expect(resumeScreen("splash", run)).toBe("setup");
+  });
+
+  it("falls back to setup when the stored screen cannot exist yet", () => {
+    // Results with nothing played, and an event dialog with nothing pending.
+    expect(resumeScreen("outcome", run)).toBe("setup");
+    expect(resumeScreen("event", withEvent(run, null))).toBe("setup");
   });
 });
 

@@ -13,7 +13,7 @@ import {
   afterNewRun,
   afterOutcome,
   canResume,
-  restoreScreen,
+  resumeScreen,
   type Screen,
 } from "./router";
 import { eventView } from "./screens/event";
@@ -26,16 +26,20 @@ import { summaryView } from "./screens/summary";
 const root = document.querySelector<HTMLDivElement>("#app");
 if (!root) throw new Error("missing #app mount point");
 
-const saved = loadSaved();
-let run: GameState | null = saved.run;
-let screen: Screen = restoreScreen(saved.screen, run);
+let run: GameState | null = loadSaved().run;
+// Always open on the splash, whatever the player was last looking at. Coming
+// back should be a choice, not a surprise. The stored screen is read only when
+// Resume is pressed.
+let screen: Screen = "splash";
 
 /** Screens that belong to a day in progress and so carry the status strip. */
 const IN_PLAY: readonly Screen[] = ["setup", "outcome", "event"];
 
 function show(next: Screen): void {
   screen = next;
-  saveScreen(next);
+  // Only in-play screens are worth resuming to. Browsing the high scores must
+  // not overwrite the point the player left their game at.
+  if (IN_PLAY.includes(next)) saveScreen(next);
   render();
 }
 
@@ -119,7 +123,8 @@ function bind(): void {
     show("scores");
   });
   document.querySelector("#resume")?.addEventListener("click", () => {
-    show("setup");
+    // Read the stored screen now rather than at load, so it is always current.
+    show(resumeScreen(loadSaved().screen, run));
   });
   document.querySelector("#back")?.addEventListener("click", () => {
     show("splash");

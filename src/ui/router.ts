@@ -22,26 +22,26 @@ function isScreen(value: string): value is Screen {
 }
 
 /**
- * Work out where a returning player should land, given the screen they were
- * last on and the run that was saved with it.
+ * Where the Resume button leads.
  *
- * The stored value comes from browser storage and is therefore untrusted: it
- * can be an unknown string, or a screen that cannot exist alongside this run
- * (an event with nothing pending, results with nothing played). Every such
- * case falls back to somewhere coherent rather than rendering an empty screen.
+ * Loading the page always lands on the splash screen, so returning is never a
+ * surprise: nobody gets dropped straight back into a game, or into the high
+ * score list, without choosing to be. The screen is still stored, so resuming
+ * returns to the exact point the player left, including a day's results they
+ * had not yet read.
+ *
+ * The stored value is untrusted browser data. It can be an unknown string, a
+ * screen outside the game proper, or one that cannot exist alongside this run:
+ * an event dialog with nothing pending, or results with nothing played.
+ * Anything that does not describe a day in progress falls back to setup.
  */
-export function restoreScreen(
+export function resumeScreen(
   saved: string | null,
   run: GameState | null,
 ): Screen {
-  if (!saved || !isScreen(saved)) return "splash";
-  if (saved === "splash" || saved === "scores") return saved;
-  if (!run) return "splash";
-  // Results already earned are worth showing whether or not the run is over,
-  // which is the whole point of persisting the screen.
-  if (saved === "outcome") return run.history.length > 0 ? "outcome" : "splash";
-  if (run.finished) return "summary";
-  if (saved === "summary") return "splash";
+  if (!run || run.finished) return "splash";
+  if (!saved || !isScreen(saved)) return "setup";
+  if (saved === "outcome") return run.history.length > 0 ? "outcome" : "setup";
   if (saved === "event") return run.pendingEvent ? "event" : "setup";
   return "setup";
 }
