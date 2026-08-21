@@ -73,25 +73,20 @@ body {
   color: var(--bad);
 }
 
-/* Layout. Two panels side by side when there is room, stacked when there is
-   not, with the status strip pinned and the actions within thumb reach. */
-.status,
-footer {
+/* The status strip stays pinned to the top while the panel below it scrolls.
+   Centred so it sits over the middle of the stage rather than drifting to the
+   far left of a wide window. */
+.status {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  justify-content: center;
   padding: 0.5rem 0.75rem;
   border-bottom: 2px solid var(--border);
   position: sticky;
   top: 0;
   background: var(--bg);
   z-index: 1;
-}
-
-footer {
-  position: static;
-  border-bottom: 0;
-  border-top: 2px solid var(--border);
 }
 
 /* One screen at a time, so a single centred column reads better than the
